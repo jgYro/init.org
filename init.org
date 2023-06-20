@@ -1,0 +1,329 @@
+#+TITLE: Yro Emacs Configuation
+#+AUTHOR: Jericho C. Gregory
+#+EMAIL: j.yrogerg.programs@gmail.com
+#+PROPERTY: header-args:emacs-lisp :tangle ./init.el
+#+STARTUP: showeverything
+
+
+* MELPA Repositories
+#+BEGIN_SRC emacs-lisp
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(package-initialize)
+#+END_SRC
+
+* Setup Use package
+#+BEGIN_SRC emacs-lisp
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+(require 'use-package)
+(setq use-package-always-ensure 't)
+#+END_SRC
+
+* Doom Theme
+#+BEGIN_SRC emacs-lisp
+(use-package doom-themes
+  :ensure t
+  :config
+  (load-theme 'doom-one t)
+  (doom-themes-visual-bell-config))
+
+  (use-package doom-modeline
+  :ensure t
+  :init (doom-modeline-mode 1))
+#+END_SRC
+
+* Add line numbers
+#+begin_src emacs-lisp
+  (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+#+end_src
+
+
+* Decrease Start Time
+#+BEGIN_SRC emacs-lisp
+(setq gc-cons-threshold 10000000)
+
+(add-hook 'after-init-hook
+            (lambda ()
+              (setq gc-cons-threshold 1000000)
+              (message "gc-cons-threshold restored to %S"
+                       gc-cons-threshold)))
+#+END_SRC
+
+* Keybind to edit config
+#+BEGIN_SRC emacs-lisp
+  (defun find-config ()
+    "Edit config.org"
+    (interactive)
+    (find-file "~/.config/emacs/init.org"))
+
+  (global-set-key (kbd "C-c I") 'find-config)
+#+END_SRC
+
+* Remove Startup Screen
+#+begin_src emacs-lisp
+    (setq inhibit-startup-screen t)
+#+end_src
+
+* Cleanup screen
+#+begin_src emacs-lisp
+(menu-bar-mode -1)
+(tool-bar-mode -1)
+#+end_src
+
+* Remove whitespace on save
+#+begin_src emacs-lisp
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
+#+end_src
+
+* Create newline with C-n
+#+begin_src emacs-lisp
+(setq next-line-add-newlines t)
+#+end_src
+
+* Overwrite regions with text
+#+begin_src emacs-lisp
+(delete-selection-mode t)
+#+end_src
+
+* Compile settings
+#+begin_src emacs-lisp
+  (add-hook 'compilation-finish-functions 'switch-to-buffer-other-window 'compilation)
+  (global-set-key (kbd "C-c C-c") 'compile)
+
+  (setq compilation-ask-about-save nil)
+
+  (setq compilation-scroll-output 'next-error)
+
+  (setq compilation-skip-threshold 2)
+#+end_src
+
+
+* Shorten prompots
+#+begin_src emacs-lisp
+  (defalias 'yes-or-no-p 'y-or-n-p)
+#+end_src
+
+* Expand region
+#+begin_src emacs-lisp
+  (use-package expand-region
+    :bind
+    ("M-n" . er/expand-region)
+    ("M-p" . er/contract-region))
+#+end_src
+
+* Smart parantheses
+#+begin_src emacs-lisp
+    (use-package smartparens
+    :config
+    (add-hook 'prog-mode-hook 'smartparens-mode))
+#+end_src
+
+* Rainbow delimiters
+#+begin_src emacs-lisp
+  (use-package rainbow-delimiters
+    :config
+    (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
+#+end_src
+
+* Strings with colors are highlighted
+#+begin_src emacs-lisp
+  (use-package rainbow-mode
+    :config
+    (setq rainbow-x-colors nil)
+    (add-hook 'prog-mode-hook 'rainbow-mode))
+#+end_src
+
+* Add matching delimeters
+#+begin_src emacs-lisp
+    (add-hook 'prog-mode-hook 'electric-pair-mode)
+#+end_src
+
+* Git
+#+begin_src emacs-lisp
+  (use-package magit
+    :bind ("C-x g" . magit-status))
+#+end_src
+
+* Ivy
+#+begin_src emacs-lisp
+    (use-package ivy
+      :config
+      (ivy-mode t))
+#+end_src
+
+* Counsel
+#+begin_src emacs-lisp
+    (use-package counsel
+    :bind (("M-x" . counsel-M-x)))
+#+end_src
+
+* Ivy Enhancements
+#+begin_src emacs-lisp
+  (use-package prescient)
+  (use-package ivy-prescient
+    :config
+    (ivy-prescient-mode t))
+#+end_src
+
+* Swiper for Ivy
+#+begin_src emacs-lisp
+  (use-package swiper
+    :bind (("M-s" . counsel-grep-or-swiper)))
+#+end_src
+
+* Hydra for Ivy
+#+begin_src emacs-lisp
+    (use-package ivy-hydra)
+#+end_src
+
+* Hydra
+#+begin_src emacs-lisp
+   (use-package major-mode-hydra
+    :bind
+    ("C-M-SPC" . major-mode-hydra)
+    :config
+    (major-mode-hydra-define org-mode
+      ()
+      ("Tools"
+       (("l" org-lint "lint")))))
+#+end_src
+
+* Which-key
+#+begin_src emacs-lisp
+  (use-package which-key
+    :config
+    (add-hook 'after-init-hook 'which-key-mode))
+#+end_src
+
+* Jump to char with C-:
+#+begin_src emacs-lisp
+  (use-package avy
+    :bind
+    ("M-'" . avy-goto-char)
+    ("M-\"" . avy-goto-line)
+    )
+#+end_src
+
+* Jump to window
+#+begin_src emacs-lisp
+  (use-package ace-window
+    :bind
+    :config
+    (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
+  (global-set-key (kbd "M-o") 'ace-window)
+#+end_src
+
+* Fzf
+#+begin_src emacs-lisp
+  (use-package fzf)
+#+end_src
+
+* Ripgrep
+#+begin_src emacs-lisp
+  (use-package deadgrep)
+#+end_src
+
+* Flycheck syntax highlighting
+#+begin_src emacs-lisp
+    (use-package flycheck
+    :config
+    (add-hook 'after-init-hook 'global-flycheck-mode)
+    (add-to-list 'flycheck-checkers 'proselint)
+    (setq-default flycheck-highlighting-mode 'lines)
+    ;; Define fringe indicator / warning levels
+    (define-fringe-bitmap 'flycheck-fringe-bitmap-ball
+      (vector #b00000000
+              #b00000000
+              #b00000000
+              #b00000000
+              #b00000000
+              #b00000000
+              #b00000000
+              #b00011100
+              #b00111110
+              #b00111110
+              #b00111110
+              #b00011100
+              #b00000000
+              #b00000000
+              #b00000000
+              #b00000000
+              #b00000000))
+    (flycheck-define-error-level 'error
+      :severity 2
+      :overlay-category 'flycheck-error-overlay
+      :fringe-bitmap 'flycheck-fringe-bitmap-ball
+      :fringe-face 'flycheck-fringe-error)
+    (flycheck-define-error-level 'warning
+      :severity 1
+      :overlay-category 'flycheck-warning-overlay
+      :fringe-bitmap 'flycheck-fringe-bitmap-ball
+      :fringe-face 'flycheck-fringe-warning)
+    (flycheck-define-error-level 'info
+      :severity 0
+      :overlay-category 'flycheck-info-overlay
+      :fringe-bitmap 'flycheck-fringe-bitmap-ball
+      :fringe-face 'flycheck-fringe-info))
+#+end_src
+
+* Eglot
+#+begin_src emacs-lisp
+  (use-package eglot
+    :ensure t
+    :defer t
+    :hook
+    (python-mode . eglot-ensure))
+#+end_src
+
+* Autocomplete
+#+BEGIN_SRC emacs-lisp
+(use-package company
+  :config
+  (setq company-idle-delay 0
+        company-minimum-prefix-length 2
+        company-selection-wrap-around t))
+(global-company-mode)
+#+END_SRC
+
+* Snippets
+#+begin_src emacs-lisp
+  (use-package yasnippet
+    :config
+    (yas-global-mode 1))
+    (use-package yasnippet-snippets)
+#+end_src
+
+* Python Formatting
+#+begin_src emacs-lisp
+    (use-package blacken
+    :config
+    (add-hook 'python-mode-hook 'blacken-mode))
+#+end_src
+
+* Pretty Org Mode Bullets
+#+BEGIN_SRC emacs-lisp
+  (use-package org-superstar)
+  (add-hook 'org-mode-hook
+	    (lambda ()
+	      (org-superstar-mode 1)))
+    (with-eval-after-load 'org-superstar
+      (set-face-attribute 'org-superstar-item nil :height 1.2)
+      (set-face-attribute 'org-superstar-header-bullet nil :height 1.2)
+      (set-face-attribute 'org-superstar-leading nil :height 1.3))
+    ;; Set different bullets, with one getting a terminal fallback.
+    (setq org-superstar-headline-bullets-list
+	  '("◉" ("🞛" ?◈) "○" "▷"))
+    ;; Stop cycling bullets to emphasize hierarchy of headlines.
+    (setq org-superstar-cycle-headline-bullets nil)
+    ;; Hide away leading stars on terminal.
+    (setq org-superstar-leading-fallback ?\s)
+#+END_SRC
+
+* Multiple Cursors
+#+BEGIN_SRC emacs-lisp
+(use-package multiple-cursors)
+(global-set-key (kbd "M-3") #'mc/mark-next-like-this)
+(global-set-key (kbd "M-4") #'mc/mark-previous-like-this)
+#+END_SRC
